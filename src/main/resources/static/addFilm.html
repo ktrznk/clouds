@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Movies Library</title>
+</head>
+<body>
+
+<div class="fixedMenu">
+    <a href="index.html">Search</a>
+    <a href="#news">Add film</a>
+</div>
+
+    <form id="myForm">
+            <input type="text" id="name" placeholder="  Movie name" class="name" name="movieName">
+            <input type="number" id="year" placeholder="  Released year" class="year" name="releasedYear">
+            <input type="text" id="tagline" placeholder="  Tagline" class="tagline" name="tagline">
+        <button type="submit" class="submitButton">Submit</button>
+
+    </form>
+
+<script type="text/javascript">
+
+    var form = document.getElementById("myForm");
+
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        var name = document.getElementById("name").value;
+        var year = document.getElementById("year").value;
+        var tagline = document.getElementById("tagline").value;
+
+        var xhr = new XMLHttpRequest();
+
+        var params = 'name=' + encodeURIComponent(name) + '&year=' + encodeURIComponent(year) + '&tagline=' + encodeURIComponent(tagline);
+        xhr.open("GET", '/addmovie/?' + params, true);
+        xhr.send(params);
+    }
+</script>
+
+</body>
+</html>

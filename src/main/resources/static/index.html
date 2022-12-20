@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Movies Library</title>
+</head>
+
+<body>
+<div class="fixedMenu">
+    <a href="#news">Search</a>
+    <a href="addFilm.html">Add film</a>
+</div>
+<div role="navigation" class="navbar">
+    <form role="search" id="search">
+        <input type="text" value="" placeholder="  Write tne movie name" class="searchPanel" name="search">
+        <button class="btn" type="submit">Search</button>
+    </form>
+</div>
+
+<div class="row">
+    <table id="results" class="table">
+        <thead>
+        <tr>
+            <th>Movie</th>
+            <th>Released</th>
+            <th>Tagline</th>
+            <th>Votes</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <div class="cast">
+            <h4>Crew</h4>
+            <ul id="crew"></ul>
+        <button class ="buttonVoice" id="vote">Give my voice</button>
+    </div>
+</div>
+
+<style type="text/css">
+    .node { stroke: #222; stroke-width: 1.5px; }
+    .node.actor { fill: #888; }
+    .node.movie { fill: #BBB; }
+    .link { stroke: #999; stroke-opacity: .6; stroke-width: 1px; }
+</style>
+
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        function showMovie(title) {
+            $.get("/movie/" + encodeURIComponent(title),
+                    function (data) {
+                        if (!data) return;
+                        $("#title").text(data.title);
+                        var $list = $("#crew").empty();
+                        data.cast.forEach(function (cast) {
+                            $list.append($("<li>" + cast.name + " " +cast.job + (cast.job == "acted"?" as " + cast.role : "") + "</li>"));
+                        });
+                        $("#vote")
+                            .unbind("click")
+                            .click(function () {
+                                voteInMovie(data.title)
+                            });
+                    }, "json");
+            return false;
+        }
+        function search(showFirst = true) {
+            var query=$("#search").find("input[name=search]").val();
+            $.get("/search?q=" + encodeURIComponent(query),
+                    function (data) {
+                        var t = $("table#results tbody").empty();
+                        if (!data || data.length == 0) return;
+                        data.forEach(function (row, index) {
+                            var movie = row.movie
+                            $("<tr><td class='movie'>" + movie.title
+                                + "</td><td>" + movie.released
+                                + "</td><td>" + movie.tagline
+                                + "</td><td id='votes" + index + "'>" + (movie.votes || 0)
+                                + "</td></tr>").appendTo(t)
+                                .click(function() { showMovie($(this).find("td.movie").text());})
+                        });
+                        if (showFirst) {
+                            showMovie(data[0].movie.title);
+                        }
+                    }, "json");
+            return false;
+        }
+        function voteInMovie(title) {
+            $.post("/movie/" + encodeURIComponent(title) + "/vote", () => {
+                search(false);
+                showMovie(title);
+            });
+        }
+
+        $("#search").submit(search);
+        search();
+    })
+</script>
+</body>
+</html>
